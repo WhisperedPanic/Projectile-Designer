@@ -2,34 +2,23 @@ import { state, setParams } from "./state/projectileState.js";
 import { analyze } from "./analysis/analyze.js";
 import { render } from "./render/svgRenderer.js";
 import { bindControls, populateInputs } from "./ui/controls.js";
-import { solveVelocityForStability } from "./ballistics/ballistics.js";
-
-const IN_TO_M = 0.0254;
+import { computeRequiredVelocityForStability } from "./ballistics/ballistics.js";
 
 function update(newParams) {
     setParams(newParams);
-
     state.result = analyze(state.params);
 
-    const twist_in = +document.getElementById("twist_select").value;
-    const sg = +document.getElementById("sg_select").value;
+    const twist = +document.getElementById("twist_select")?.value || 10;
+    const sg = +document.getElementById("sg_select")?.value || 1.5;
 
-    const twist_m = twist_in * IN_TO_M;
-
-    // 🔥 velocity is now m/s (correct)
-    const velocity = solveVelocityForStability(
-        state.result.geometry,
-        {
-            ...state.result.stability,
-            cp: state.result.stability.center_of_pressure,
-            com: state.result.stability.center_of_mass
-        },
-        sg,
-        twist_m
-    );
+    const velocity = computeRequiredVelocityForStability(state.params, {
+        mass_gr: state.result.ballistics.mass_gr,
+        twist_in: twist,
+        stability: sg
+    });
 
     state.sanity = {
-        twist: twist_in,
+        twist,
         sg,
         velocity
     };
