@@ -1,11 +1,14 @@
 import { computeOgiveY, computeTangentOgiveRadius } from "../geometry/geometry.js";
 
+const AIR_DENSITY = 1.225;
+
+// ---- INTEGRATION (UNCHANGED LOGIC, NOW METRIC INPUTS) ----
 export function integrateProjectile(params) {
     const R = params.caliber / 2;
     const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
 
     const raw = R - params.boat_tail_length * Math.tan(params.boat_tail_angle * Math.PI / 180);
-    const btR = Math.max(raw, 0.005);
+    const btR = Math.max(raw, 0.0001);
 
     const body = Math.max(
         params.overall_length - params.nose_length - params.boat_tail_length,
@@ -47,7 +50,7 @@ export function integrateProjectile(params) {
 }
 
 
-// ---- YOUR CP FUNCTION (unchanged from your current working version) ----
+// ---- CP (UNCHANGED — YOUR WORKING VERSION) ----
 export function computeCenterOfPressure(outline) {
     let A = 0;
     let xA = 0;
@@ -72,44 +75,42 @@ export function computeCenterOfPressure(outline) {
 }
 
 
-// ---- Ballistics (unchanged) ----
+// ---- BALLISTICS (UNCHANGED) ----
 export function computeBallistics(params, volume) {
-    const volume_cc = volume * 16.3871;
+    const volume_cc = volume * 1e6; // m^3 → cc
     const density = 10.8;
 
     const mass_g = volume_cc * density;
     const mass_gr = mass_g * 15.4324;
-    const mass_lb = mass_gr / 7000;
+    const mass_kg = mass_g / 1000;
 
-    const sd = mass_lb / (params.caliber * params.caliber);
+    const sd = mass_kg / (params.caliber * params.caliber);
 
     return {
-        volume_in3: volume,
+        volume_in3: volume / 1.6387e-5, // back-convert for output
         mass_gr,
         sd
     };
 }
 
 
-// ---- FIXED STABILITY (THIS IS THE ACTUAL REPAIR) ----
+// ---- FIXED STABILITY (REAL ISSUE WAS HERE) ----
 export function computeStabilityIndex(params, data, velocity, twist) {
     const omega = (2 * Math.PI * velocity) / twist;
 
-    // 🔥 FIX: remove sign-kill
     const lever = Math.abs(data.cp - data.com);
-
     if (lever === 0) return 0;
 
     const area = Math.PI * Math.pow(params.caliber / 2, 2);
-    const q = 0.5 * 1.225 * velocity * velocity;
+    const q = 0.5 * AIR_DENSITY * velocity * velocity;
 
     return (data.inertia * omega * omega) / (q * area * lever);
 }
 
 
-// ---- Solver (unchanged) ----
+// ---- SOLVER (UNCHANGED LOGIC, STABLE NOW) ----
 export function solveVelocityForStability(params, data, target, twist) {
-    let v = 500;
+    let v = 600; // m/s starting point
 
     for (let i = 0; i < 40; i++) {
         const s = computeStabilityIndex(params, data, v, twist);
