@@ -104,3 +104,26 @@ export function computeBallistics(params) {
 
     return { volume_in3, mass_gr, sd, bc_g7, bc_g1 };
 }
+
+export function computeMinTwistRate(params, options = {}) {
+    const {
+        mass_gr,
+        stability = 1.5 // typical safe value
+    } = options;
+
+    const d = params.caliber;              // inches
+    const l = params.overall_length;       // inches
+    const l_cal = l / d;
+
+    const numerator = 30 * mass_gr;
+
+    const denominator =
+        stability *
+        Math.pow(d, 3) *
+        l *
+        (1 + l_cal * l_cal);
+
+    const T = Math.sqrt(numerator / denominator);
+
+    return T; // inches per turn
+}
