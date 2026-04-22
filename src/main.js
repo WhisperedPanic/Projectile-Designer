@@ -14,9 +14,9 @@ function update(newParams) {
     const twist_in = +document.getElementById("twist_select").value;
     const sg = +document.getElementById("sg_select").value;
 
-    // 🔥 REQUIRED FIX: convert twist to meters
     const twist_m = twist_in * IN_TO_M;
 
+    // 🔥 velocity is now m/s (correct)
     const velocity = solveVelocityForStability(
         state.result.geometry,
         {
