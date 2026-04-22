@@ -40,6 +40,25 @@ svg { background:#000; border:1px solid #444; }
   <option value="hybrid">Hybrid</option>
 </select>
 
+<h3>Stability Check (For Info Only)</h3>
+
+<label for="twist_select">Twist Rate</label>
+<select id="twist_select">
+  <option value="7">1:7</option>
+  <option value="8">1:8</option>
+  <option value="9">1:9</option>
+  <option value="10" selected>1:10</option>
+  <option value="11">1:11</option>
+  <option value="12">1:12</option>
+</select>
+
+<label for="sg_select">Target Stability (Sg)</label>
+<select id="sg_select">
+  <option value="1.5">1.5 - Minimum Requirement</option>
+  <option value="1.8" selected>1.8 - Preferred</option>
+  <option value="2.0">2.0 - Cold Environment</option>
+</select>
+  
 <button id="updateBtn">Update</button>
 </div>
 
