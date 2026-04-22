@@ -1,21 +1,15 @@
 import { computeProjectileOutline, computeNoseProfile } from "../geometry/geometry.js";
-import { computeBallistics, computeCenterOfMass, computeMinTwistRate } from "../ballistics/ballistics.js";
+import { computeBallistics, computeCenterOfMass } from "../ballistics/ballistics.js";
 
 export function analyze(params) {
     const ballistics = computeBallistics(params);
     const com = computeCenterOfMass(params);
 
-    const twist = computeMinTwistRate(params, {
-        mass_gr: ballistics.mass_gr,
-        stability: 1.5
-    });
-
     return {
         geometry: params,
         ballistics,
         stability: {
-            center_of_mass: com,
-            twist_rate: twist
+            center_of_mass: com
         },
         points: {
             outline: computeProjectileOutline(params),
