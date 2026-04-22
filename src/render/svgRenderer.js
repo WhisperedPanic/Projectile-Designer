@@ -16,7 +16,7 @@ export function render(state) {
 
     const el = document.createElementNS("http://www.w3.org/2000/svg","path");
     el.setAttribute("d", path);
-    el.setAttribute("stroke-dasharray="4"","lime");
+    el.setAttribute("stroke","red");
     el.setAttribute("fill","none");
 
     svg.appendChild(el);
