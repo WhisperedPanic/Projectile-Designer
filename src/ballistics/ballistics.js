@@ -112,9 +112,9 @@ export function computeRequiredVelocityForStability(params, options = {}) {
         stability
     } = options;
 
-    if (!mass_gr || !twist_in || !stability) {
-        throw new Error("mass_gr, twist_in, and stability are required");
-    }
+if (!isFinite(mass_gr) || !isFinite(twist_in) || !isFinite(stability)) {
+    return NaN;
+}
 
     const d = params.caliber;
     const l = params.overall_length;
