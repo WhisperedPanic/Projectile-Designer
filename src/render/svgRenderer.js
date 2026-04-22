@@ -72,3 +72,12 @@ function drawCOM(svg, comX, scale, offsetX, offsetY) {
     svg.appendChild(line1);
     svg.appendChild(line2);
 }
+
+const sanity = state.sanity;
+
+if (sanity) {
+    document.getElementById("sanity_output").textContent =
+        `Twist: 1:${sanity.twist}" | ` +
+        `Target Sg: ${sanity.sg} | ` +
+        `Required Velocity: ${sanity.velocity.toFixed(0)} fps`;
+}
