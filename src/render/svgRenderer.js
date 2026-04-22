@@ -24,12 +24,15 @@ export function render(state) {
 
     // ---- Draw Axis ----
     const axis = document.createElementNS("http://www.w3.org/2000/svg","line");
+
     axis.setAttribute("x1", offsetX);
     axis.setAttribute("y1", offsetY);
     axis.setAttribute("x2", offsetX + state.params.overall_length * scale);
     axis.setAttribute("y2", offsetY);
-    axis.setAttribute("stroke", "#444")
-    axis.setAttribute("stroke-dasharray","4");
+
+    axis.setAttribute("stroke", "#444");
+    axis.setAttribute("stroke-width", "1.5");
+    axis.setAttribute("stroke-dasharray", "4,4");
 
     svg.appendChild(axis);
     
