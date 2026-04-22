@@ -28,7 +28,8 @@ export function render(state) {
     axis.setAttribute("y1", offsetY);
     axis.setAttribute("x2", offsetX + state.params.overall_length * scale);
     axis.setAttribute("y2", offsetY);
-    axis.setAttribute("stroke", "#444");
+    axis.setAttribute("stroke", "#444")
+    axis.setAttribute("stroke-dasharray","4");
 
     svg.appendChild(axis);
     
