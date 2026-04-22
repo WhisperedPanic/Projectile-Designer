@@ -11,6 +11,10 @@ export function bindControls(onUpdate) {
 
         onUpdate(params);
     };
+
+    // Also update when dropdowns change
+    document.getElementById("twist_select").onchange = () => onUpdate({});
+    document.getElementById("sg_select").onchange = () => onUpdate({});
 }
 
 export function populateInputs(params) {
