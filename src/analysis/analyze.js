@@ -4,7 +4,12 @@ import { computeBallistics, computeCenterOfMass, computeMinTwistRate } from "../
 export function analyze(params) {
     const ballistics = computeBallistics(params);
     const com = computeCenterOfMass(params);
-    const twist = computeMinTwistRate(params, options = {});
+
+    const twist = computeMinTwistRate(params, {
+        mass_gr: ballistics.mass_gr,
+        stability: 1.5
+    });
+
     return {
         geometry: params,
         ballistics,
