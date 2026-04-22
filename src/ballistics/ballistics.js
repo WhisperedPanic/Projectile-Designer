@@ -34,6 +34,50 @@ export function computeVolume(params) {
     return Math.PI * total * dx;
 }
 
+export function computeCenterOfMass(params) {
+    const R = params.caliber / 2;
+
+    const raw = R - params.boat_tail_length * Math.tan(params.boat_tail_angle * Math.PI/180);
+    const btR = Math.max(raw, 0.005);
+
+    const body = Math.max(
+        params.overall_length - params.nose_length - params.boat_tail_length,
+        0
+    );
+
+    const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
+
+    const N = 1000;
+    const dx = params.overall_length / N;
+
+    let volumeSum = 0;
+    let momentSum = 0;
+
+    for (let i = 0; i <= N; i++) {
+        const x = i * dx;
+
+        let r;
+
+        if (x <= params.nose_length)
+            r = computeOgiveY(x, R, rho);
+        else if (x <= params.nose_length + body)
+            r = R;
+        else {
+            const t = (x - params.nose_length - body) / params.boat_tail_length;
+            r = R + t * (btR - R);
+        }
+
+        const w = (i === 0 || i === N) ? 0.5 : 1;
+
+        const dV = Math.PI * r * r * dx * w;
+
+        volumeSum += dV;
+        momentSum += x * dV;
+    }
+
+    return momentSum / volumeSum;
+}
+
 export function computeBallistics(params) {
     const D = params.caliber;
 
