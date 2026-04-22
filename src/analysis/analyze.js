@@ -4,7 +4,7 @@ import { computeBallistics, computeCenterOfMass, computeMinTwistRate } from "../
 export function analyze(params) {
     const ballistics = computeBallistics(params);
     const com = computeCenterOfMass(params);
-    const twist = computeMinTwistRate(T);
+    const twist = computeMinTwistRate(params);
     return {
         geometry: params,
         ballistics,
