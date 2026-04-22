@@ -4,7 +4,7 @@ export function integrateProjectile(params) {
     const R = params.caliber / 2;
     const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
 
-    const raw = R - params.boat_tail_length * Math.tan(params.boat_tail_angle * Math.PI/180);
+    const raw = R - params.boat_tail_length * Math.tan(params.boat_tail_angle * Math.PI / 180);
     const btR = Math.max(raw, 0.005);
 
     const body = Math.max(
@@ -23,11 +23,11 @@ export function integrateProjectile(params) {
         const x = i * dx;
 
         let r;
-        if (x <= params.nose_length)
+        if (x <= params.nose_length) {
             r = computeOgiveY(x, R, rho);
-        else if (x <= params.nose_length + body)
+        } else if (x <= params.nose_length + body) {
             r = R;
-        else {
+        } else {
             const t = (x - params.nose_length - body) / params.boat_tail_length;
             r = R + t * (btR - R);
         }
@@ -39,17 +39,18 @@ export function integrateProjectile(params) {
         volume += dV;
         xMoment += x * dV;
 
-        // axial inertia
+        // Axial moment of inertia (solid of revolution)
         inertia += 0.5 * r * r * dV;
     }
 
-    const com = xMoment / volume;
+    const com = volume > 0 ? xMoment / volume : 0;
 
     return { volume, com, inertia };
 }
 
 
-// ---- CP from projected area centroid ----
+// ---- FIXED: Center of Pressure ----
+// Uses ONLY upper surface to avoid signed-area cancellation
 export function computeCenterOfPressure(outline) {
     let A = 0;
     let xA = 0;
@@ -58,7 +59,10 @@ export function computeCenterOfPressure(outline) {
         const p1 = outline[i];
         const p2 = outline[i + 1];
 
-        const dx = p2.x - p1.x;
+        // Ignore lower surface
+        if (p1.y < 0 && p2.y < 0) continue;
+
+        const dx = Math.abs(p2.x - p1.x);
         const avgHeight = (Math.abs(p1.y) + Math.abs(p2.y)) / 2;
 
         const dA = avgHeight * dx;
@@ -68,11 +72,11 @@ export function computeCenterOfPressure(outline) {
         xA += xMid * dA;
     }
 
-    return xA / A;
+    return A > 0 ? xA / A : 0;
 }
 
 
-// ---- Mass + SD (unchanged logic) ----
+// ---- Ballistics (unchanged behaviour) ----
 export function computeBallistics(params, volume) {
     const volume_cc = volume * 16.3871;
     const density = 10.8;
@@ -91,7 +95,7 @@ export function computeBallistics(params, volume) {
 }
 
 
-// ---- Stability index ----
+// ---- Stability Index ----
 export function computeStabilityIndex(params, data, velocity, twist) {
     const omega = (2 * Math.PI * velocity) / twist;
 
@@ -105,12 +109,13 @@ export function computeStabilityIndex(params, data, velocity, twist) {
 }
 
 
-// ---- Solve velocity ----
+// ---- Solve velocity for target stability ----
 export function solveVelocityForStability(params, data, target, twist) {
     let v = 100;
 
     for (let i = 0; i < 40; i++) {
         const s = computeStabilityIndex(params, data, v, twist);
+
         if (s <= 0) return 0;
 
         v *= Math.sqrt(target / s);
