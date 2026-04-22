@@ -105,25 +105,30 @@ export function computeBallistics(params) {
     return { volume_in3, mass_gr, sd, bc_g7, bc_g1 };
 }
 
-export function computeMinTwistRate(params, options = {}) {
+export function computeRequiredVelocityForStability(params, options = {}) {
     const {
         mass_gr,
-        stability = 1.5 // typical safe value
+        twist_in,
+        stability
     } = options;
 
-    const d = params.caliber;              // inches
-    const l = params.overall_length;       // inches
+    if (!mass_gr || !twist_in || !stability) {
+        throw new Error("mass_gr, twist_in, and stability are required");
+    }
+
+    const d = params.caliber;
+    const l = params.overall_length;
     const l_cal = l / d;
 
-    const numerator = 30 * mass_gr;
-
-    const denominator =
+    const numerator =
         stability *
         Math.pow(d, 3) *
         l *
         (1 + l_cal * l_cal);
 
-    const T = Math.sqrt(numerator / denominator);
+    const denominator = 30 * mass_gr;
 
-    return T; // inches per turn
+    const V = twist_in * Math.sqrt(numerator / denominator);
+
+    return V; // fps
 }
