@@ -108,27 +108,29 @@ export function computeBallistics(params) {
 export function computeRequiredVelocityForStability(params, options = {}) {
     const {
         mass_gr,
-        twist_in,
-        stability
+        twist_in,     // inches per turn (e.g. 10)
+        stability,
+        airDensityRatio = 1.0
     } = options;
 
-if (!isFinite(mass_gr) || !isFinite(twist_in) || !isFinite(stability)) {
-    return NaN;
-}
+    if (!isFinite(mass_gr) || !isFinite(twist_in) || !isFinite(stability)) {
+        return NaN;
+    }
 
-    const d = params.caliber;
-    const l = params.overall_length;
-    const l_cal = l / d;
+    const d = params.caliber;                 // inches
+    const l_cal = params.overall_length / d;  // calibers
 
-    const numerator =
+    const t = twist_in / d; // 🔥 critical: calibers per turn
+
+    const numerator = 30 * mass_gr * airDensityRatio;
+
+    const denominator =
         stability *
         Math.pow(d, 3) *
-        l *
+        l_cal *
         (1 + l_cal * l_cal);
 
-    const denominator = 30 * mass_gr;
+    const v = t * Math.sqrt(numerator / denominator);
 
-    const V = twist_in * Math.sqrt(numerator / denominator);
-
-    return V; // fps
+    return v; // fps
 }
