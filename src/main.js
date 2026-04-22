@@ -4,28 +4,32 @@ import { render } from "./render/svgRenderer.js";
 import { bindControls, populateInputs } from "./ui/controls.js";
 import { solveVelocityForStability } from "./ballistics/ballistics.js";
 
+const IN_TO_M = 0.0254;
+
 function update(newParams) {
     setParams(newParams);
+
     state.result = analyze(state.params);
 
-    const twist = +document.getElementById("twist_select")?.value || 10;
-    const sg = +document.getElementById("sg_select")?.value || 1.5;
+    const twist_in = +document.getElementById("twist_select").value;
+    const sg = +document.getElementById("sg_select").value;
 
-    const data = {
-        com: state.result.stability.center_of_mass,
-        cp: state.result.stability.center_of_pressure,
-        inertia: state.result.stability.inertia
-    };
+    // 🔥 REQUIRED FIX: convert twist to meters
+    const twist_m = twist_in * IN_TO_M;
 
     const velocity = solveVelocityForStability(
-        state.params,
-        data,
+        state.result.geometry,
+        {
+            ...state.result.stability,
+            cp: state.result.stability.center_of_pressure,
+            com: state.result.stability.center_of_mass
+        },
         sg,
-        twist
+        twist_m
     );
 
     state.sanity = {
-        twist,
+        twist: twist_in,
         sg,
         velocity
     };
