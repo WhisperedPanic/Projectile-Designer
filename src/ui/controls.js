@@ -3,15 +3,22 @@ import { INPUT_STEPS, UNIT_LABELS } from "../units/units.js";
 
 export function bindControls(onUpdate) {
     document.getElementById("updateBtn").onclick = () => {
+
+        const join_pct    = +document.getElementById("joinPosition").value;
+        const nose_length = +document.getElementById("nose_length").value;
+
         const params = {
             caliber:          +document.getElementById("caliber").value,
             overall_length:   +document.getElementById("overall_length").value,
-            nose_length:      +document.getElementById("nose_length").value,
+            nose_length:      nose_length,
             boat_tail_length: +document.getElementById("boat_tail_length").value,
             boat_tail_angle:  +document.getElementById("boat_tail_angle").value,
-            ogive_type:        document.getElementById("ogive_type").value,
+            ogive_type:       document.getElementById("ogive_type").value,
+
+            // Convert % → absolute length (mm/in depending on mode)
             joinPosition:     (join_pct / 100) * nose_length
         };
+
         onUpdate(params);
     };
 
