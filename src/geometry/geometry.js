@@ -13,7 +13,103 @@ export function computeOgiveY(x, R, rho) {
     return Math.max(Math.sqrt(disc) - (rho - R), 0);
 }
 
+
+// --- ADDED HYBRID SOLVER ---
+export function solveHybridOgive({ D, Lh, Lm, Rt, xj }) {
+
+    const R = D / 2;
+
+    const xt = 0;
+    const yt = R + Rt;
+
+    const dx = xj - xt;
+    const inside = Rt * Rt - dx * dx;
+
+    if (inside <= 0) {
+        throw new Error("Invalid join position: outside tangent circle");
+    }
+
+    const yj = yt - Math.sqrt(inside);
+
+    let nx = (xj - xt);
+    let ny = (yj - yt);
+
+    const nLen = Math.hypot(nx, ny);
+    nx /= nLen;
+    ny /= nLen;
+
+    const targetX = Lh;
+    const targetY = Lm / 2;
+
+    const dx2 = targetX - xj;
+    const dy2 = targetY - yj;
+
+    const dot = dx2 * nx + dy2 * ny;
+    const dist2 = dx2 * dx2 + dy2 * dy2;
+
+    const lambda = dist2 / (2 * dot);
+
+    if (!isFinite(lambda) || lambda <= 0) {
+        throw new Error("Invalid secant solution (lambda)");
+    }
+
+    const xs = xj + lambda * nx;
+    const ys = yj + lambda * ny;
+
+    return {
+        R,
+        tangent: { radius: Rt, center: [xt, yt] },
+        secant: { radius: lambda, center: [xs, ys] },
+        join: { x: xj, y: yj },
+        meplat: { x: Lh, yTop: Lm / 2 }
+    };
+}
+
+
+// --- MODIFIED FUNCTION ---
 export function computeNoseProfile(params, segments=120) {
+
+    if (params.ogiveType === "hybrid") {
+
+        const geo = solveHybridOgive({
+            D: params.caliber,
+            Lh: params.nose_length,
+            Lm: params.meplat,
+            Rt: params.tangentRadius,
+            xj: params.joinPosition
+        });
+
+        const pts = [];
+
+        const [xt, yt] = geo.tangent.center;
+        const Rt = geo.tangent.radius;
+
+        const [xs, ys] = geo.secant.center;
+        const Rs = geo.secant.radius;
+
+        // Tangent arc
+        for (let i = 0; i <= segments; i++) {
+            const x = (i / segments) * geo.join.x;
+            const y = yt - Math.sqrt(Rt*Rt - (x - xt)*(x - xt));
+
+            if (pts.length === 0 || Math.abs(pts[pts.length - 1].x - x) > 1e-6) {
+                pts.push({ x, y });
+            }
+        }
+
+        // Secant arc
+        for (let i = 0; i <= segments; i++) {
+            const x = geo.join.x + (i / segments) * (geo.meplat.x - geo.join.x);
+            const y = ys - Math.sqrt(Rs*Rs - (x - xs)*(x - xs));
+
+            if (Math.abs(pts[pts.length - 1].x - x) > 1e-6) {
+                pts.push({ x, y });
+            }
+        }
+
+        return pts;
+    }
+
     const R = params.caliber/2;
     const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
 
