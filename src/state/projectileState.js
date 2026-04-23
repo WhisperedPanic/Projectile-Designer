@@ -5,7 +5,9 @@ export const state = {
         nose_length: 0.45,
         boat_tail_length: 0.18,
         boat_tail_angle: 9.0,
-        ogive_type: "tangent"
+        ogive_type: "tangent",
+        material: "c10100",
+        density_gcc: 9.84
     },
     result: null
 };
