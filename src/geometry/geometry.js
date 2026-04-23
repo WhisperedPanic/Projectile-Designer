@@ -14,7 +14,7 @@ export function computeOgiveY(x, R, rho) {
 }
 
 
-// --- ADDED HYBRID SOLVER ---
+// --- ADDED: Hybrid Ogive Solver ---
 export function solveHybridOgive({ D, Lh, Lm, Rt, xj }) {
 
     const R = D / 2;
@@ -66,23 +66,29 @@ export function solveHybridOgive({ D, Lh, Lm, Rt, xj }) {
 }
 
 
-// --- MODIFIED FUNCTION ---
+// --- MODIFIED: computeNoseProfile (hybrid support added) ---
 export function computeNoseProfile(params, segments=120) {
 
-    if (params.ogiveType === "hybrid") {
+    // --- HYBRID MODE ---
+    if (params.ogive_type === "hybrid") {
+
+        // --- APPROVED DESIGN ---
+        const Lm = 1.3;                          // fixed meplat
+        const Rt = 8 * params.caliber;           // derived tangent radius
+        const xj = params.joinPosition;          // single user control
 
         const geo = solveHybridOgive({
             D: params.caliber,
             Lh: params.nose_length,
-            Lm: params.meplat,
-            Rt: params.tangentRadius,
-            xj: params.joinPosition
+            Lm: Lm,
+            Rt: Rt,
+            xj: xj
         });
 
         const pts = [];
 
         const [xt, yt] = geo.tangent.center;
-        const Rt = geo.tangent.radius;
+        const Rt_local = geo.tangent.radius;
 
         const [xs, ys] = geo.secant.center;
         const Rs = geo.secant.radius;
@@ -90,7 +96,7 @@ export function computeNoseProfile(params, segments=120) {
         // Tangent arc
         for (let i = 0; i <= segments; i++) {
             const x = (i / segments) * geo.join.x;
-            const y = yt - Math.sqrt(Rt*Rt - (x - xt)*(x - xt));
+            const y = yt - Math.sqrt(Rt_local*Rt_local - (x - xt)*(x - xt));
 
             if (pts.length === 0 || Math.abs(pts[pts.length - 1].x - x) > 1e-6) {
                 pts.push({ x, y });
@@ -110,6 +116,7 @@ export function computeNoseProfile(params, segments=120) {
         return pts;
     }
 
+    // --- EXISTING LOGIC (UNCHANGED) ---
     const R = params.caliber/2;
     const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
 
@@ -125,6 +132,7 @@ export function computeNoseProfile(params, segments=120) {
 
     return pts;
 }
+
 
 export function computeProjectileOutline(params) {
     const R = params.caliber/2;
