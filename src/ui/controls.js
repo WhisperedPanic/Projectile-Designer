@@ -9,7 +9,8 @@ export function bindControls(onUpdate) {
             nose_length:      +document.getElementById("nose_length").value,
             boat_tail_length: +document.getElementById("boat_tail_length").value,
             boat_tail_angle:  +document.getElementById("boat_tail_angle").value,
-            ogive_type:        document.getElementById("ogive_type").value
+            ogive_type:        document.getElementById("ogive_type").value,
+            joinPosition:     +document.getElementById("joinPosition").value
         };
         onUpdate(params);
     };
