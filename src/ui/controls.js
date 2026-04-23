@@ -26,7 +26,7 @@ export function populateMaterials(defaultId) {
     MATERIALS.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m.id;
-        opt.textContent = `${m.label} (${m.density_gcc} g/cc)`;
+        opt.textContent = `${m.label} - (${m.density_gcc} g/cc)`;
 
         if (m.id === defaultId) opt.selected = true;
         sel.appendChild(opt);
