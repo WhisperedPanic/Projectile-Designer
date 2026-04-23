@@ -27,8 +27,19 @@ export function render(state, unitMode = "imperial") {
     el.setAttribute("fill", "none");
     svg.appendChild(el);
 
+    // ---- Draw Join Point (Hybrid Only) ----
+    if (pts.join) {
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+        marker.setAttribute("cx", toSvgX(pts.join.x));
+        marker.setAttribute("cy", (-pts.join.y * scale + offsetY));
+        marker.setAttribute("r", 3);
+        marker.setAttribute("fill", "cyan");
+
+        svg.appendChild(marker);
+    }
+
     // ---- Draw Axis ----
-    // Spans from base (left) to nose tip (right) — same pixel range as before.
     const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
     axis.setAttribute("x1", toSvgX(L)); // base — left edge
     axis.setAttribute("y1", offsetY);
