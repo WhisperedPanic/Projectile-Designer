@@ -1,5 +1,3 @@
-//---ballistics---
-
 import { computeOgiveY, computeTangentOgiveRadius } from "../geometry/geometry.js";
 
 export function computeVolume(params) {
@@ -25,7 +23,9 @@ export function computeVolume(params) {
         else if (x <= params.nose_length + body)
             r = R;
         else {
-            const t = (x - params.nose_length - body)/params.boat_tail_length;
+            const t = params.boat_tail_length > 0
+                ? (x - params.nose_length - body) / params.boat_tail_length
+                : 1;
             r = R + t*(btR - R);
         }
 
@@ -65,7 +65,9 @@ export function computeCenterOfMass(params) {
         else if (x <= params.nose_length + body)
             r = R;
         else {
-            const t = (x - params.nose_length - body) / params.boat_tail_length;
+            const t = params.boat_tail_length > 0
+                ? (x - params.nose_length - body) / params.boat_tail_length
+                : 1;
             r = R + t * (btR - R);
         }
 
@@ -86,7 +88,8 @@ export function computeBallistics(params) {
     const volume_in3 = computeVolume(params);
     const volume_cc = volume_in3 * 16.3871;
 
-    const mass_g = volume_cc * 10.8;
+    const density = params.density_gcc ?? 9.84;
+    const mass_g = volume_cc * density;
     const mass_gr = mass_g * 15.4324;
     const mass_lb = mass_gr / 7000;
 
@@ -107,32 +110,29 @@ export function computeBallistics(params) {
     return { volume_in3, mass_gr, sd, bc_g7, bc_g1 };
 }
 
-export function computeRequiredVelocityForStability(params, options = {}) {
+export function computeActualSg(params, options = {}) {
     const {
         mass_gr,
         twist_in,     // inches per turn (e.g. 10)
-        stability,
         airDensityRatio = 1.0
     } = options;
 
-    if (!isFinite(mass_gr) || !isFinite(twist_in) || !isFinite(stability)) {
+    if (!isFinite(mass_gr) || !isFinite(twist_in) || twist_in <= 0) {
         return NaN;
     }
 
     const d = params.caliber;                 // inches
     const l_cal = params.overall_length / d;  // calibers
 
-    const t = twist_in / d; // 🔥 critical: calibers per turn
+    const t = twist_in / d; // calibers per turn
 
     const numerator = 30 * mass_gr * airDensityRatio;
 
     const denominator =
-        stability *
+        t * t *
         Math.pow(d, 3) *
         l_cal *
         (1 + l_cal * l_cal);
 
-    const v = t * Math.sqrt(numerator / denominator);
-
-    return v; // fps
+    return numerator / denominator;
 }
