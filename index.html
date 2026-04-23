@@ -97,7 +97,31 @@ input:checked + .slider::before { transform: translateX(22px); }
   <option value="hybrid">Hybrid</option>
 </select>
 
-<label for="joinPosition">Hybrid Ogive Transition</label>   
+<label for="joinPosition">
+
+    Join Position (%)
+
+    <span title="Join Position (% of nose length)
+
+0–20%   → Secant-dominant (sharp, high performance, sensitive)
+
+20–40%  → Performance hybrid (sleek, still secant-biased)
+
+40–60%  → Balanced hybrid (recommended baseline)
+
+60–80%  → Tangent-dominant (stable, more tolerant)
+
+80–100% → Near tangent (robust, higher drag)
+
+Lower % → curvature concentrated near tip
+
+Higher % → curvature distributed along nose">
+
+        ⓘ
+
+    </span>
+
+</label>   
 <input id="joinPosition" type="number" step="1" min="0" max="100" value="50">
     
 <label for="material_select">Material</label>
