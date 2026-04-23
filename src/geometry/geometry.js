@@ -13,8 +13,6 @@ export function computeOgiveY(x, R, rho) {
     return Math.max(Math.sqrt(disc) - (rho - R), 0);
 }
 
-
-// --- ADDED: Hybrid Ogive Solver ---
 export function solveHybridOgive({ D, Lh, Lm, Rt, xj }) {
 
     const R = D / 2;
@@ -65,17 +63,13 @@ export function solveHybridOgive({ D, Lh, Lm, Rt, xj }) {
     };
 }
 
-
-// --- MODIFIED: computeNoseProfile (hybrid support added) ---
 export function computeNoseProfile(params, segments=120) {
 
-    // --- HYBRID MODE ---
     if (params.ogive_type === "hybrid") {
 
-        // --- APPROVED DESIGN ---
-        const Lm = 1.3;                          // fixed meplat
-        const Rt = 8 * params.caliber;           // derived tangent radius
-        const xj = params.joinPosition;          // single user control
+        const Lm = 1.3;
+        const Rt = 8 * params.caliber;
+        const xj = params.joinPosition;
 
         const geo = solveHybridOgive({
             D: params.caliber,
@@ -93,7 +87,6 @@ export function computeNoseProfile(params, segments=120) {
         const [xs, ys] = geo.secant.center;
         const Rs = geo.secant.radius;
 
-        // Tangent arc
         for (let i = 0; i <= segments; i++) {
             const x = (i / segments) * geo.join.x;
             const y = yt - Math.sqrt(Rt_local*Rt_local - (x - xt)*(x - xt));
@@ -103,7 +96,6 @@ export function computeNoseProfile(params, segments=120) {
             }
         }
 
-        // Secant arc
         for (let i = 0; i <= segments; i++) {
             const x = geo.join.x + (i / segments) * (geo.meplat.x - geo.join.x);
             const y = ys - Math.sqrt(Rs*Rs - (x - xs)*(x - xs));
@@ -113,10 +105,12 @@ export function computeNoseProfile(params, segments=120) {
             }
         }
 
+        // --- ADDED: expose join point ---
+        pts.join = geo.join;
+
         return pts;
     }
 
-    // --- EXISTING LOGIC (UNCHANGED) ---
     const R = params.caliber/2;
     const rho = computeTangentOgiveRadius(params.nose_length, params.caliber);
 
@@ -132,7 +126,6 @@ export function computeNoseProfile(params, segments=120) {
 
     return pts;
 }
-
 
 export function computeProjectileOutline(params) {
     const R = params.caliber/2;
