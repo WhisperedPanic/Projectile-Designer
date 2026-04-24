@@ -4,7 +4,7 @@
  * Depends on window.OgiveGeometry (geometry.js must load first).
  * Exposed on window.OgiveVisualizer
  *
- * Orientation: base (breech) on LEFT, tip (meplat) on RIGHT.
+ * Orientation: base (boattail) on LEFT, tip (meplat) on RIGHT.
  */
 (function (global) {
   "use strict";
@@ -89,8 +89,8 @@
     var drawH = H - pad.top  - pad.bottom;
 
     var xMin  = 0;
-    var xMax  = _params.overall_length;
-    var yMax  = _params.caliber / 2 * 1.18;
+    var xMax  = _params.overall_length * 1.25;
+    var yMax  = _params.caliber / 2 * 1.5;
 
     var scaleX = drawW / (xMax - xMin);
     var scaleY = drawH / (2 * yMax);
