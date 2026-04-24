@@ -89,7 +89,7 @@
     var drawH = H - pad.top  - pad.bottom;
 
     var xMin  = 0;
-    var xMax  = _params.overall_length * 1.25;
+    var xMax  = _params.overall_length;
     var yMax  = _params.caliber / 2 * 1.5;
 
     var scaleX = drawW / (xMax - xMin);
