@@ -19,6 +19,7 @@
     LITZ:       1.2,
     AGGRESSIVE: 1.7,
     EXTREME:    null,
+    CUSTOM:    null,
   };
 
   var MODE_LABELS = {
@@ -26,6 +27,7 @@
     LITZ:       "Litz Hybrid",
     AGGRESSIVE: "Aggressive Hybrid",
     EXTREME:    "Extreme Hybrid",
+    CUSTOM:    "Custom Hybrid",
   };
 
   // ── Internal primitives ────────────────────────────────────────────────────
@@ -52,6 +54,12 @@
     if (key === "EXTREME") {
       if (customRatio == null || customRatio < 2.0) {
         throw new Error("EXTREME mode requires customRatio >= 2.0.");
+      }
+      return { key: key, ratio: customRatio };
+    }
+    if (key === "CUSTOM") {
+      if (customRatio == null || customRatio < 0.0) {
+        throw new Error("CUSTOM mode requires customRatio >= 0.0.");
       }
       return { key: key, ratio: customRatio };
     }
@@ -115,9 +123,9 @@
     var r_tip_mm = r_tip * toMm;
 
     var meplat_status;
-    if      (r_tip_mm < MEPLAT_MIN - 1e-4)                    meplat_status = "below_min";
-    else if (r_tip_mm > MEPLAT_MAX + 1e-4)                    meplat_status = "above_max";
-    else if (Math.abs(r_tip_mm - MEPLAT_PREFERRED) <= 0.05)   meplat_status = "ok";
+    if      (r_tip_mm < MEPLAT_MIN - 0.5e-4)                    meplat_status = "below_min";
+    else if (r_tip_mm > MEPLAT_MAX + 0.5e-4)                    meplat_status = "above_max";
+    else if (Math.abs(r_tip_mm - MEPLAT_PREFERRED) <= 0.075)   meplat_status = "ok";
     else                                                       meplat_status = "in_range";
 
     if (meplat_status === "below_min") {
@@ -154,6 +162,9 @@
     }
     if (modeKey === "EXTREME" && ratio > 4.0) {
       warnings.push("Extreme ratio " + ratio.toFixed(3) + " is very high \u2014 verify meplat carefully.");
+    }
+    if (modeKey === "CUSTOM" && ratio > 4.0) {
+      warnings.push("Custom ratio " + ratio.toFixed(3) + " is very high \u2014 verify meplat carefully.");
     }
 
     return {
