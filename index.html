@@ -30,12 +30,18 @@
           <option value="MILD">Mild Hybrid (1.075×)</option>
           <option value="LITZ" selected>Litz Hybrid (1.2×)</option>
           <option value="AGGRESSIVE">Aggressive Hybrid (1.7×)</option>
-          <option value="EXTREME">Extreme Hybrid (custom)</option>
+          <option value="EXTREME">Extreme Hybrid (<2.0x)</option>
+          <option value="CUSTOM">Custom Hybrid (Custom)</option>
         </select>
 
         <div id="extreme-row" class="ctrl-row" style="margin-top:8px;">
           <label for="ctrl-customRatio">Custom ratio</label>
           <input type="number" id="ctrl-customRatio" value="2.5" min="2.0" max="8.0" step="0.1" />
+        </div>
+
+        <div id="custom-row" class="ctrl-row" style="margin-top:8px;">
+          <label for="ctrl-customRatio">Custom ratio</label>
+          <input type="number" id="ctrl-customRatio" value="2.5" min="0.0" max="8.0" step="0.1" />
         </div>
       </div>
 
@@ -171,6 +177,9 @@
     if (mode === "EXTREME") {
       p.customRatio = parseFloat(document.getElementById("ctrl-customRatio").value) || 2.5;
     }
+    if (mode === "CUSTOM") {
+      p.customRatio = parseFloat(document.getElementById("ctrl-customRatio").value) || 2.5;
+    }
     // Clamp overall_length >= nose_length + boat_tail_length
     var minOAL = p.nose_length + p.boat_tail_length + 0.001;
     if (p.overall_length < minOAL) p.overall_length = minOAL;
@@ -216,6 +225,13 @@
   document.getElementById("ctrl-mode").addEventListener("change", function () {
     document.getElementById("extreme-row").style.display =
       this.value === "EXTREME" ? "flex" : "none";
+    redraw();
+  });
+
+    // ── Mode change → show/hide CUSTOM row ──────────────────────────────────
+  document.getElementById("ctrl-mode").addEventListener("change", function () {
+    document.getElementById("custom-row").style.display =
+      this.value === "CUSTOM" ? "flex" : "none";
     redraw();
   });
 
