@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hybrid Ogive Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div id="sidebar-header">
+      <h1>Ogive Visualizer</h1>
+      <p>Hybrid ogive geometry engine v0.4.0</p>
+    </div>
+
+    <div id="controls">
+
+      <!-- Ogive Mode -->
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Ogive Mode</div>
+
+        <select id="ctrl-mode">
+          <option value="MILD">Mild Hybrid (1.075×)</option>
+          <option value="LITZ" selected>Litz Hybrid (1.2×)</option>
+          <option value="AGGRESSIVE">Aggressive Hybrid (1.7×)</option>
+          <option value="EXTREME">Extreme Hybrid (custom)</option>
+        </select>
+
+        <div id="extreme-row" class="ctrl-row" style="margin-top:8px;">
+          <label for="ctrl-customRatio">Custom ratio</label>
+          <input type="number" id="ctrl-customRatio" value="2.5" min="2.0" max="8.0" step="0.1" />
+        </div>
+      </div>
+
+      <!-- Caliber & Lengths -->
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Dimensions (inches)</div>
+
+        <div class="ctrl-row">
+          <label for="ctrl-caliber">Caliber</label>
+          <input type="number" id="ctrl-caliber" value="0.308" min="0.10" max="2.0" step="0.001" />
+        </div>
+
+        <div class="ctrl-row">
+          <label for="ctrl-nose-length">Nose length</label>
+          <input type="number" id="ctrl-nose-length" value="0.900" min="0.10" max="4.0" step="0.001" />
+        </div>
+
+        <div class="ctrl-row">
+          <label for="ctrl-overall-length">Overall length</label>
+          <input type="number" id="ctrl-overall-length" value="1.340" min="0.20" max="6.0" step="0.001" />
+        </div>
+
+        <div class="ctrl-row">
+          <label for="ctrl-bt-length">Boat tail length</label>
+          <input type="number" id="ctrl-bt-length" value="0.180" min="0.0" max="1.0" step="0.001" />
+        </div>
+
+        <div class="ctrl-row">
+          <label for="ctrl-bt-angle">Boat tail angle °</label>
+          <input type="number" id="ctrl-bt-angle" value="6.5" min="0.0" max="20.0" step="0.5" />
+        </div>
+      </div>
+
+      <!-- Hybrid Parameters -->
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Hybrid Parameters</div>
+
+        <div class="ctrl-row" style="flex-wrap:wrap; gap:4px;">
+          <label for="ctrl-blend">Blend (% from tip)</label>
+          <span class="ctrl-value" id="blend-val">55%</span>
+        </div>
+        <div class="ctrl-row">
+          <input type="range" id="ctrl-blend" min="5" max="95" step="1" value="55" />
+        </div>
+
+        <div class="ctrl-row" style="flex-wrap:wrap; gap:4px;">
+          <label for="ctrl-cone">Cone half-angle °</label>
+          <span class="ctrl-value" id="cone-val">1.5°</span>
+        </div>
+        <div class="ctrl-row">
+          <input type="range" id="ctrl-cone" min="0.5" max="5.0" step="0.1" value="1.5" />
+        </div>
+      </div>
+
+      <!-- Display Options -->
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Display</div>
+
+        <label class="check-row">
+          <input type="checkbox" id="opt-grid" checked />
+          <span>Grid</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-sections" checked />
+          <span>Colour sections</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-blend" checked />
+          <span>Blend point</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-dimensions" checked />
+          <span>Dimensions</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-warnings" checked />
+          <span>Warnings</span>
+        </label>
+      </div>
+
+    </div><!-- /controls -->
+  </aside>
+
+  <!-- ── Main canvas area ────────────────────────────────────────────────── -->
+  <main id="main">
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="footer-bar">
+      <span>Mode: <strong id="fb-mode">—</strong></span>
+      <span>R<sub>S</sub>/R<sub>T</sub>: <strong id="fb-ratio">—</strong></span>
+      <span>Ogive: <strong id="fb-ogive">—</strong></span>
+      <span>Meplat Ø: <strong id="fb-meplat">—</strong></span>
+      <span>Tip slope: <strong id="fb-slope">—</strong></span>
+      <span>Status: <strong id="meplat-status">—</strong></span>
+    </div>
+  </main>
+
+</div><!-- /app -->
+
+<!-- Scripts: geometry first, then visualizer, then main -->
+<script src="geometry.js"></script>
+<script src="visualizer.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ── Canvas setup ──────────────────────────────────────────────────────────
+  var canvas = document.getElementById("canvas");
+  var wrap   = document.getElementById("canvas-wrap");
+
+  function sizeCanvas() {
+    canvas.width  = wrap.offsetWidth;
+    canvas.height = wrap.offsetHeight;
+  }
+  sizeCanvas();
+  OgiveVisualizer.init(canvas);
+
+  // ── Read params from controls ─────────────────────────────────────────────
+  function getParams() {
+    var mode = document.getElementById("ctrl-mode").value;
+    var p = {
+      caliber:         parseFloat(document.getElementById("ctrl-caliber").value)       || 0.308,
+      nose_length:     parseFloat(document.getElementById("ctrl-nose-length").value)   || 0.900,
+      overall_length:  parseFloat(document.getElementById("ctrl-overall-length").value)|| 1.340,
+      boat_tail_length:parseFloat(document.getElementById("ctrl-bt-length").value)     || 0.180,
+      boat_tail_angle: parseFloat(document.getElementById("ctrl-bt-angle").value)      || 6.5,
+      mode:            mode,
+      blendFraction:   parseInt(document.getElementById("ctrl-blend").value, 10) / 100,
+      coneAngleDeg:    parseFloat(document.getElementById("ctrl-cone").value)          || 1.5,
+    };
+    if (mode === "EXTREME") {
+      p.customRatio = parseFloat(document.getElementById("ctrl-customRatio").value) || 2.5;
+    }
+    // Clamp overall_length >= nose_length + boat_tail_length
+    var minOAL = p.nose_length + p.boat_tail_length + 0.001;
+    if (p.overall_length < minOAL) p.overall_length = minOAL;
+    return p;
+  }
+
+  // ── Update footer bar ─────────────────────────────────────────────────────
+  function updateFooter(geo) {
+    document.getElementById("fb-mode").textContent   = geo.modeLabel || "—";
+    document.getElementById("fb-ratio").textContent  = geo.ratio != null ? geo.ratio : "—";
+    document.getElementById("fb-ogive").textContent  = geo.ogiveRatio != null ? geo.ogiveRatio + " cal" : "—";
+    document.getElementById("fb-meplat").textContent = geo.r_tip_mm  != null ? (geo.r_tip_mm * 2).toFixed(3) + " mm" : "—";
+    document.getElementById("fb-slope").textContent  = geo.tipSlopeDeg != null ? geo.tipSlopeDeg.toFixed(2) + "°" : "—";
+
+    var statusEl = document.getElementById("meplat-status");
+    var statusMap = { ok: "OK ✓", in_range: "In range", below_min: "Below min ⚠", above_max: "Above max ⚠", error: "Error ✗" };
+    statusEl.textContent = statusMap[geo.meplat_status] || geo.meplat_status || "—";
+    statusEl.className   = geo.meplat_status || "";
+  }
+
+  // ── Main render loop ──────────────────────────────────────────────────────
+  function redraw() {
+    var p = getParams();
+    OgiveVisualizer.render(p);
+    // Pull geometry for footer (already computed inside visualizer, but we re-compute cheaply)
+    try {
+      var geo = OgiveGeometry.computeNoseGeometry(p);
+      updateFooter(geo);
+    } catch(e) { /* ignore */ }
+  }
+
+  // ── Blend slider label ────────────────────────────────────────────────────
+  document.getElementById("ctrl-blend").addEventListener("input", function () {
+    document.getElementById("blend-val").textContent = this.value + "%";
+  });
+
+  // ── Cone slider label ─────────────────────────────────────────────────────
+  document.getElementById("ctrl-cone").addEventListener("input", function () {
+    document.getElementById("cone-val").textContent = parseFloat(this.value).toFixed(1) + "°";
+  });
+
+  // ── Mode change → show/hide EXTREME row ──────────────────────────────────
+  document.getElementById("ctrl-mode").addEventListener("change", function () {
+    document.getElementById("extreme-row").style.display =
+      this.value === "EXTREME" ? "flex" : "none";
+    redraw();
+  });
+
+  // ── Wire all controls to redraw ───────────────────────────────────────────
+  var controls = document.querySelectorAll(
+    "#controls input[type=number], #controls input[type=range], #controls select"
+  );
+  controls.forEach(function (el) {
+    el.addEventListener("input", redraw);
+    el.addEventListener("change", redraw);
+  });
+
+  // ── Display option checkboxes ─────────────────────────────────────────────
+  var optMap = {
+    "opt-grid":       "showGrid",
+    "opt-sections":   "showSections",
+    "opt-blend":      "showBlendPoint",
+    "opt-dimensions": "showDimensions",
+    "opt-warnings":   "showWarnings",
+  };
+  Object.keys(optMap).forEach(function (id) {
+    document.getElementById(id).addEventListener("change", function () {
+      OgiveVisualizer.setOption(optMap[id], this.checked);
+    });
+  });
+
+  // ── Resize ────────────────────────────────────────────────────────────────
+  window.addEventListener("resize", function () {
+    sizeCanvas();
+    OgiveVisualizer.resize();
+    redraw();
+  });
+
+  // ── Initial draw ──────────────────────────────────────────────────────────
+  redraw();
+
+}());
+</script>
+
+</body>
+</html>
